@@ -1,3 +1,3 @@
 fn main() {
-	println!("Hello, world!");
+	let _img = image::open("image.png").unwrap();
 }
