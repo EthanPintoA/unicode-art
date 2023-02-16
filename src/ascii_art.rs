@@ -1,5 +1,32 @@
+use std::path::Path;
+
 use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, Luma};
+
+/// Validates and opens image
+pub fn open_image(img_path: impl AsRef<Path>) -> Result<DynamicImage, String> {
+	let img_path = img_path.as_ref();
+
+	if !img_path.exists() {
+		return Err(format!(
+			"{}: {}: No such file",
+			env!("CARGO_PKG_NAME"),
+			img_path.to_string_lossy()
+		));
+	}
+	if img_path.is_dir() {
+		return Err(format!(
+			"{}: {}: Is a directory",
+			env!("CARGO_PKG_NAME"),
+			img_path.to_string_lossy()
+		));
+	}
+
+	match image::open(img_path) {
+		Ok(i) => Ok(i),
+		Err(e) => Err(e.to_string()),
+	}
+}
 
 fn luma_to_char(luma: &Luma<u8>) -> char {
 	// http://paulbourke.net/dataformats/asciiart/
