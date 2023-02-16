@@ -21,10 +21,9 @@ fn preprocess_image(
 
 	ImageBuffer::from_fn(width, height, |x, y| {
 		let luma_a = image_buf.get_pixel(x, y);
-
 		// Blend and remove alpha
 		// https://en.wikipedia.org/wiki/Alpha_compositing
-		Luma::from([(luma_a[0] as f32 * (luma_a[1] as f32 / 255.0)) as u8])
+		[(luma_a[0] as f32 * (luma_a[1] as f32 / 255.0)) as u8].into()
 	})
 }
 
