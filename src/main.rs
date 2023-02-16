@@ -1,5 +1,5 @@
 use image::imageops::FilterType;
-use image::Luma;
+use image::{DynamicImage, ImageBuffer, Luma};
 
 fn luma_to_char(luma: &Luma<u8>) -> char {
 	// http://paulbourke.net/dataformats/asciiart/
@@ -11,11 +11,27 @@ fn luma_to_char(luma: &Luma<u8>) -> char {
 	ASCII_CHARS[(luma[0] / ratio) as usize]
 }
 
+fn preprocess_image(
+	image: DynamicImage,
+	width: u32,
+	height: u32,
+) -> ImageBuffer<Luma<u8>, Vec<u8>> {
+	let image = image.resize_exact(width, height, FilterType::Nearest);
+	let image_buf = image.to_luma_alpha8();
+
+	ImageBuffer::from_fn(width, height, |x, y| {
+		let luma_a = image_buf.get_pixel(x, y);
+
+		// Blend and remove alpha
+		// https://en.wikipedia.org/wiki/Alpha_compositing
+		Luma::from([(luma_a[0] as f32 * (luma_a[1] as f32 / 255.0)) as u8])
+	})
+}
+
 fn main() {
 	let img = image::open("image.png").unwrap();
 
-	let img = img.resize_exact(100, 50, FilterType::Nearest);
-	let image_buf = img.to_luma8();
+	let image_buf = preprocess_image(img, 100, 50);
 
 	let ascii_art = image_buf
 		.rows()
